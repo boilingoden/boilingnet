@@ -21,9 +21,14 @@ echo "⚠️"
 echo "⚠️"
 echo "⚠️"
 echo ""
+
 sleep 3
-domain='gmail.com'
-path='/generate_204'
+
+traget='https://gmail.com/generate_204'
+
+if [[ $1 != '' ]]; do
+    target=$1
+fi
 
 redbg="\033[0;41m"
 greenbg="\033[0;42m"
@@ -208,7 +213,7 @@ function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
     local userAgent="user-agent: curl/7.88.1 "
     userAgent+="(compatible; ConnectivityCheckBot/0.1; https://soon.example.com/bot/)"
-    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" https://"$domain$path"
+    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$target"
 }
 
 function toMiliSec() {
