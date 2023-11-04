@@ -2,6 +2,23 @@
 
 # netector
 
+function freedomIsFreedomToSay() {
+    cat << EOF
+    __o            o           __o                o     o
+  o/  v\\          <|>        o/  v\\              <|>   <|>
+ /|    <\\         < >       /|    <\\             / >   < \\
+ //    o/         / \\       //    o/    _\\__o__  \\o__ __o/
+      /v     _\\__o   o__/_       /v          \\   \\|__ __|
+     />           \\ /           />      _\\__o__         |
+   o/             <o>         o/             \\         <o>
+  /v               |         /v                         |
+ /> __o__/_       < >       /> __o__/_                 / \\
+EOF
+}
+
+echo ""
+freedomIsFreedomToSay
+
 echo "⚠️"
 echo "⚠️"
 echo "⚠️"
@@ -66,6 +83,32 @@ tlsmaxmsec=300
 tlsyellowmsec=250
 tlsgreenmsec=200
 
+
+function azadi() {
+    cat << EOF
+____¶¶¶________________________________¶¶¶¶____¶¶
+___¶¶__¶¶¶___________________________¶¶¶______¶¶
+___¶_____¶¶¶¶______________________¶¶________¶¶
+___¶________¶¶¶¶_________________¶¶_________¶¶
+__¶¶___________¶¶¶¶_____________¶¶_________¶¶
+__¶¶______________¶¶¶¶¶¶_______¶__________¶¶
+__¶¶___________________¶¶¶___¶¶__________¶¶
+___¶_____________________¶¶__¶______¶¶¶¶¶¶¶
+___¶¶____________________¶¶_¶_____¶¶____ö_¶¶¶
+____¶¶_____________________¶¶¶¶¶¶¶_________¶¶¶¶
+______¶¶_________________________________¶¶¶
+_______¶¶¶______________________________¶¶
+__________¶¶¶¶_________________________¶¶
+______________¶¶______________________¶¶
+_______________¶¶¶¶¶¶________________¶¶
+_¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶____________________¶¶
+__¶______________________________¶¶¶¶
+___¶¶________________________¶¶¶¶¶
+____¶¶_______________¶¶¶¶¶¶¶¶¶
+______¶¶¶¶_____________¶¶
+_________¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶¶
+EOF
+}
 
 # function floatToDigit() (printf '%.0f' $1)
 function floatToDigit() (echo ${1%\.*})
@@ -163,9 +206,10 @@ function chart() {
             # colors -- color for total,dns,tcp,tls
             [[ colorSelectCounter -gt 1 ]] && colors colorSelectCounter
             # [[ colorSelectCounter -gt 2 ]] && chartShape='▒' || chartShape='▓'
+            # [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='▄'
             [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='╬'
             # [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='◙'
-            #[[ colorSelectCounter -gt 2 ]] && chartShape=' ' || chartShape='◙'
+            # [[ colorSelectCounter -gt 2 ]] && chartShape=' ' || chartShape='◙'
             [[ colorSelectCounter -eq 5 ]] && colorSelectCounter=0
             # CHARTVALUE=$(convertToChartVlaue $VALUE $maxmsec)
             local CHUNCK=$(($VALUE - $REDUCTION))
@@ -436,6 +480,7 @@ function netector() {
             echo
         elif [[ $input == "q" ]] || [[ $input == "Q" ]]; then
             echo
+            azadi
             break
         else
             clearInput
