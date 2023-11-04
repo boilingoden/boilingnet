@@ -27,16 +27,19 @@ sleep 3
 domain='gmail.com'
 path='/generate_204'
 
-redbg="\033[0;41m"
-greenbg="\033[0;42m"
+
 red="\033[0;31m"
 redb="\033[0;91m"
+redbg="\033[0;41m"
 yellow="\033[0;33m"
 yellowb="\033[0;93m"
-greenb="\033[0;92m" #9xm & 10xm = light
+yellowbg="\033[0;43m"
 green="\033[0;32m"  #3xm & 4xm = dark
+greenb="\033[0;92m" #9xm & 10xm = light
+greenbg="\033[0;42m" #background
 cyan="\033[0;36m"
 cyanb="\033[0;96m"
+cyanbg="\033[0;46m"
 gray="\033[0;37m"
 darkgray="\033[0;90m"
 clear="\033[0m"
@@ -160,7 +163,9 @@ function chart() {
             # colors -- color for total,dns,tcp,tls
             [[ colorSelectCounter -gt 1 ]] && colors colorSelectCounter
             # [[ colorSelectCounter -gt 2 ]] && chartShape='▒' || chartShape='▓'
-            [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='◙'
+            [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='╬'
+            # [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='◙'
+            #[[ colorSelectCounter -gt 2 ]] && chartShape=' ' || chartShape='◙'
             [[ colorSelectCounter -eq 5 ]] && colorSelectCounter=0
             # CHARTVALUE=$(convertToChartVlaue $VALUE $maxmsec)
             local CHUNCK=$(($VALUE - $REDUCTION))
