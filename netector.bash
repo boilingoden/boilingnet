@@ -324,9 +324,16 @@ function netector() {
             SECONDS=$(($SECONDS - $secondsTemp))
             outputHead1=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
             outputHead1+=$(printf "${red} ⚠️ $exitCode: $errorMsg ${clear}\n")
-            tailValue=-1
+            if [[ $exitCode -gt 0 ]] && [[ resultdig -eq 0 ]]; then
+                tailValue=-2
+            elif [[ $exitCode -gt 0 ]]; then
+                tailValue=-1
+                [[ $showGraph -eq 1 ]] && chartValue=-1
+            elif [[ $resultdig -eq 0 ]]; then
+                tailValue=-1
+                [[ $showGraph -eq 1 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+            fi
             if [[ $showGraph -eq 1 ]]; then
-                chartValue=-1
                 [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
                 #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
                 [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
@@ -337,9 +344,16 @@ function netector() {
             dis=true
             outputHead1=$(printf "${yellow} ❌ still disconnected!!! :(( ${clear}")
             outputHead1+=$(printf "${red} ⚠️ $exitCode: $errorMsg ${clear}\n")
-            tailValue=-1
+            if [[ $exitCode -gt 0 ]] && [[ resultdig -eq 0 ]]; then
+                tailValue=-2
+            elif [[ $exitCode -gt 0 ]]; then
+                tailValue=-1
+                [[ $showGraph -eq 1 ]] && chartValue=-1
+            elif [[ $resultdig -eq 0 ]]; then
+                tailValue=-1
+                [[ $showGraph -eq 1 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+            fi
             if [[ $showGraph -eq 1 ]]; then
-                chartValue=-1
                 [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
                 #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
                 [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
