@@ -312,7 +312,7 @@ function netector() {
         )
         # local untilHttpStartTime=$(echo $resultjson | jq .time_starttransfer | toMiliSec)
         local totalTime=$(
-            echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$resultdig" '{print $1-$lookupTime+dnstime}'
+            echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$resultdig" '{print $1-lookupTime+dnstime}'
         )
         # local totalTime=$(echo $resultjson | jq .time_total | toMiliSec)
 
