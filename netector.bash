@@ -1,58 +1,12 @@
 #!/bin/bash
 
 # netector
-
-function freedomIsFreedomToSay() {
-    echo ""
-    echo ""
-    cat << EOF
-      Freedom is the freedom to say that
-          __o            o           __o                o     o
-        o/  v\\          <|>        o/  v\\              <|>   <|>
-       /|    <\\         < >       /|    <\\             / >   < \\
-       //    o/         / \\       //    o/    _\\__o__  \\o__ __o/
-            /v     _\\__o   o__/_       /v          \\   \\|__ __|
-           />           \\ /           />      _\\__o__         |
-         o/             <o>         o/             \\         <o>
-        /v               |         /v                         |
-       /> __o__/_       < >       /> __o__/_                 / \\
-                            if that is granted, all else follows...
-                                              ― George Orwell, 1984
-
-EOF
-    echo ""
-    echo ""
-}
-
-
-freedomIsFreedomToSay
-
-echo "⚠️"
-echo "⚠️"
-echo "⚠️"
-echo "⚠️"
-echo ""
-echo "                           📶 netector"
-echo ""
-echo ""
-echo "                            dig + curl"
-echo ""
-echo ""
-echo ""
-echo ""
-echo "      ensure you have at least 100 * 40 character window size"
-echo "⚠️"
-echo "⚠️"
-echo "⚠️"
-echo "⚠️"
-echo ""
-echo " chart: total (dig+(cURL-curlLookup)) - DNS - TCP Handshake - TLS Handshake"
-
-sleep 3
+# usage:
+#       bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check]
+#       bash -d netector.bash gmail.com -u https://gmail.com/generate_204
 
 domain='gmail.com'
-path='/generate_204'
-
+url='https://gmail.com/generate_204'
 
 red="\033[0;31m"
 redb="\033[0;91m"
@@ -92,13 +46,89 @@ tlsmaxmsec=300
 tlsyellowmsec=250
 tlsgreenmsec=200
 
+
+function usage()
+{
+    echo "usage:"
+    echo "bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check]"
+    echo "bash -d netector.bash gmail.com -u https://gmail.com/generate_204"
+}
+
+function checkArguments() {
+    while [[ $1 != "" ]]; do
+        case $1 in
+            -d | --domain )     shift
+                        domain=$1
+                                    ;;
+            -u | --url )     shift
+                        url=$1
+                                    ;;
+            -h | --help )         usage
+                                    exit
+                                    ;;
+            * )                   usage
+                                    exit 1
+        esac
+        echo $1;
+        shift
+    done
+}
+
+function freedomIsFreedomToSay() {
+    echo ""
+    echo ""
+    cat << EOF
+      Freedom is the freedom to say that
+          __o            o           __o                o     o
+        o/  v\\          <|>        o/  v\\              <|>   <|>
+       /|    <\\         < >       /|    <\\             / >   < \\
+       //    o/         / \\       //    o/    _\\__o__  \\o__ __o/
+            /v     _\\__o   o__/_       /v          \\   \\|__ __|
+           />           \\ /           />      _\\__o__         |
+         o/             <o>         o/             \\         <o>
+        /v               |         /v                         |
+       /> __o__/_       < >       /> __o__/_                 / \\
+                            if that is granted, all else follows...
+                                              ― George Orwell, 1984
+
+EOF
+    echo ""
+    echo ""
+}
+
+function startNote() {
+    echo "⚠️"
+    echo "⚠️"
+    echo "⚠️"
+    echo "⚠️"
+    echo ""
+    echo "                           📶 netector"
+    echo ""
+    echo ""
+    echo "                            dig + curl"
+    echo ""
+    echo ""
+    echo ""
+    echo ""
+    echo "      ensure you have at least 100 * 40 character window size"
+    echo "⚠️"
+    echo "⚠️"
+    echo "⚠️"
+    echo "⚠️"
+    echo ""
+    echo " chart: total (dig+(cURL-curlLookup)) - DNS - TCP Handshake - TLS Handshake"
+
+    sleep 3
+}
+
 # function floatToDigit() (printf '%.0f' $1)
 function floatToDigit() (echo ${1%\.*})
 
 # function percent() (echo "$(awk 'BEGIN{print '$1'/'$2'*100}')")
 function percent() {
     local val=$(echo "$1/$2*100" | bc -l)
-    floatToDigit $val
+    local digit=$(floatToDigit $val)
+    [[ $digit -eq '' ]] && echo '0' || echo $digit
 }
 
 
@@ -186,13 +216,13 @@ function chart() {
         for VALUE in ${VALUES[@]}; do
             ((colorSelectCounter++))
             # colors -- color for total,dns,tcp,tls
-            [[ colorSelectCounter -gt 1 ]] && colors colorSelectCounter
+            [[ $colorSelectCounter -gt 1 ]] && colors $colorSelectCounter
             # [[ colorSelectCounter -gt 2 ]] && chartShape='▒' || chartShape='▓'
             # [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='▄'
-            [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='╬'
+            [[ $colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='╬'
             # [[ colorSelectCounter -gt 2 ]] && chartShape='▓' || chartShape='◙'
             # [[ colorSelectCounter -gt 2 ]] && chartShape=' ' || chartShape='◙'
-            [[ colorSelectCounter -eq 5 ]] && colorSelectCounter=0
+            [[ $colorSelectCounter -eq 5 ]] && colorSelectCounter=0
             # CHARTVALUE=$(convertToChartVlaue $VALUE $maxmsec)
             local CHUNCK=$(($VALUE - $REDUCTION))
             if [[ $VALUE -eq -123456789 ]]; then
@@ -241,7 +271,7 @@ function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
     local userAgent="user-agent: curl/7.88.1 "
     userAgent+="(compatible; ConnectivityCheckBot/0.1; https://soon.example.com/bot/)"
-    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" https://"$domain$path"
+    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$url"
 }
 
 function toMiliSec() {
@@ -289,7 +319,7 @@ function netector() {
         # echo
         secondsTemp=$SECONDS
         local resultdig=$(digcmd)
-        [[ resultdig -eq '' ]] && resultdig=0
+        [[ $resultdig -eq '' ]] && resultdig=0
         # local result=$(
         #     { stdout=$(curlcmd); returncode=$?; } 2>&1
         #     printf ". . . - - - . . .\n"
@@ -304,16 +334,20 @@ function netector() {
         local errorMsg=$(echo $resultjson | jq .errormsg)
 
         local lookupTime=$(echo $resultjson | jq .time_namelookup | toMiliSec)
+        [[ $lookupTime -eq '' ]] && lookupTime=0
         local tcpHandshakeTime=$(
             echo $resultjson | jq .time_connect | toMiliSec | awk -v dnstime="$lookupTime" '{print $1-dnstime}'
         )
+        [[ $tcpHandshakeTime -eq '' ]] && tcpHandshakeTime=0
         local sslHandshakeTime=$(
-            echo $resultjson | jq .time_appconnect | toMiliSec | awk -v ssltime="$tcpHandshakeTime" '{print $1-ssltime}'
+            echo $resultjson | jq .time_appconnect | toMiliSec | awk -v ssltime="$tcpHandshakeTime" -v dnstime="$lookupTime"  '{print $1-ssltime-dnstime}'
         )
+        [[ $sslHandshakeTime -eq '' ]] && sslHandshakeTime=0
         # local untilHttpStartTime=$(echo $resultjson | jq .time_starttransfer | toMiliSec)
         local totalTime=$(
             echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$resultdig" '{print $1-lookupTime+dnstime}'
         )
+        [[ $totalTime -eq '' ]] && totalTime=0
         # local totalTime=$(echo $resultjson | jq .time_total | toMiliSec)
 
         # local downloadSpeed=$(echo $resultjson | jq .speed_download)
@@ -334,7 +368,7 @@ function netector() {
         local chartValuedns=0
         local chartValuetcp=0
         local chartValuessl=0
-        if [[ $exitCode -gt 0 ]] || [[ resultdig -eq 0 ]] && [[ $dis = false ]]; then
+        if { [ $exitCode -gt 0 ] || [ $resultdig -eq 0 ]; } && [[ $dis = false ]]; then
             lastConnectTime=$SECONDS
             # skip the first error (where there is a lot of noise)
             # if [[ $disTemp = false ]]; then
@@ -350,41 +384,40 @@ function netector() {
             SECONDS=$(($SECONDS - $secondsTemp))
             outputHead1=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
             outputHead1+=$(printf "${red} ⚠️ $exitCode: $errorMsg ${clear}\n")
-            if [[ $exitCode -gt 0 ]] && [[ resultdig -eq 0 ]]; then
+            if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
                 tailValue=-2
+                chartValue=-1
             elif [[ $exitCode -gt 0 ]]; then
                 tailValue=-1
-                [[ $showGraph -eq 1 ]] && chartValue=-1
+                chartValue=-1
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
-                [[ $showGraph -eq 1 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+                [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
-            if [[ $showGraph -eq 1 ]]; then
-                [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
-                #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
-                [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
-                [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-            fi
-        elif [[ $exitCode -gt 0 ]] || [[ resultdig -eq 0 ]]; then
+            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
+            [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
+            [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
+        elif [[ $exitCode -gt 0 ]] || [[ $resultdig -eq 0 ]]; then
             [[ $mute -eq 0 ]] && printf "\7"
             dis=true
             outputHead1=$(printf "${yellow} ❌ still disconnected!!! :(( ${clear}")
             outputHead1+=$(printf "${red} ⚠️ $exitCode: $errorMsg ${clear}\n")
-            if [[ $exitCode -gt 0 ]] && [[ resultdig -eq 0 ]]; then
+            if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
                 tailValue=-2
+                chartValue=-1
             elif [[ $exitCode -gt 0 ]]; then
                 tailValue=-1
-                [[ $showGraph -eq 1 ]] && chartValue=-1
+                chartValue=-1
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
-                [[ $showGraph -eq 1 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+                [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+
             fi
-            if [[ $showGraph -eq 1 ]]; then
-                [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
-                #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
-                [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
-                [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-            fi
+            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
+            [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
+            [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             sleepValue=8
         elif [[ $dis = true ]]; then
             lastDisconnectTime=$SECONDS
@@ -395,24 +428,20 @@ function netector() {
             outputHead1=$(printf "${greenbg} 📶 connected! :D ${clear}")
             txtColor=$cyanb
             tailValue=$totalTime
-            if [[ $showGraph -eq 1 ]]; then
-                chartValue=$(convertToChartVlaue $totalTime $maxmsec)
-                [[ $resultdig -gt 3 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
-                #[[ $lookupTime -gt 3 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
-                [[ $tcpHandshakeTime -gt 3 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
-                [[ $sslHandshakeTime -gt 3 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-            fi
+            chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
+            [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
+            [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             sleepValue=1
         else
             disTemp=false
             tailValue=$totalTime
-            if [[ $showGraph -eq 1 ]]; then
-                chartValue=$(convertToChartVlaue $totalTime $maxmsec)
-                [[ $resultdig -gt 3 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
-                #[[ $lookupTime -gt 3 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
-                [[ $tcpHandshakeTime -gt 3 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
-                [[ $sslHandshakeTime -gt 3 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-            fi
+            chartValue=$(convertToChartVlaue $totalTime $maxmsec)
+            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
+            [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
+            [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             txtColor=$(getColor $totalTime)
             sleepValue=1
         fi
@@ -433,14 +462,15 @@ function netector() {
         outputHead2+=$(printf "  ${gray}❌ last Disconnect time: $elapsedDisconnect ")
         outputHead2+=$(printf "  ${gray}📶 last Connect time: $elapsedConnect ")
         outputHead2+=$(printf "${clear}\n")
-        local tailValues+=($tailValue)
-        if [[ $showGraph -eq 1 ]]; then
-            chartValues+=(-123456789)
-            chartValues+=($chartValue)
-            chartValues+=($chartValuedns)
-            chartValues+=($chartValuetcp)
-            chartValues+=($chartValuessl)
-        fi
+
+        tailValues+=($tailValue)
+
+        chartValues+=(-123456789)
+        chartValues+=($chartValue)
+        chartValues+=($chartValuedns)
+        chartValues+=($chartValuetcp)
+        chartValues+=($chartValuessl)
+
         if [[ ${#tailValues[@]} -gt $maxarray ]]; then
             tailValues=("${tailValues[@]:1}")
             chartValues=("${chartValues[@]:5}")
@@ -456,7 +486,7 @@ function netector() {
             clearInput
         elif [[ $input == "g" ]] || [[ $input == "G" ]]; then
             ((showGraph ^= 1))
-            chartValues=($(toChartValues ${tailValues[@]}))
+            chartValues=$((toChartValues ${tailValues[@]}))
             # printf ' %-4s' "${chartValues[@]}"
             clearInput
             echo
@@ -486,4 +516,8 @@ function netector() {
     exit
 }
 
+
+checkArguments $@
+freedomIsFreedomToSay
+startNote
 netector
