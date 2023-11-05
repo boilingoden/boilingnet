@@ -286,11 +286,13 @@ function toMiliSec() {
 }
 
 function setTitleConnected() {
-    printf '\e]2;%s\a' "Netector | $1 ms -- uptime $2 | mute: $3"
+    printf '\e]2;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"
+    printf '\e]30;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"
 }
 
 function setTitleDisconnected() {
-    printf '\e]2;%s\a' "Netector | downtime $1 | mute: $2"
+    printf '\e]2;%s\a' "Netector | $domain | downtime $1 | mute: $2"
+    printf '\e]30;%s\a' "Netector | $domain | downtime $1 | mute: $2"
 }
 
 function clearInput() (while read -r -t 0; do read -r -t 3; done)
@@ -448,15 +450,15 @@ function netector() {
         local elapsed=$(date -ud @${SECONDS} +"%H:%M:%S")
         local elapsedDisconnect=$(date -ud @${lastDisconnectTime} +"%H:%M:%S")
         local elapsedConnect=$(date -ud @${lastConnectTime} +"%H:%M:%S")
-        if [[ $exitCode -eq 0 ]]; then
+        if [[ $dis = true ]]; then
+            setTitleDisconnected $elapsed $mute
+        else
             outputHead1+=$(printf "${txtColor} 🔄 Total time: $totalTime ms ")
             outputHead1+=$(printf "  🔄 DNS time: $resultdig ms ")
             outputHead1+=$(printf "  🔄 TCPH time: $tcpHandshakeTime ms ")
             outputHead1+=$(printf "  🔄 TLSH time: $sslHandshakeTime ms ")
             outputHead1+=$(printf "${clear}\n")
-            outputHead1+=$(setTitleConnected $totalTime $elapsed $mute)
-        else
-            outputHead1+=$(setTitleDisconnected $elapsed $mute)
+            setTitleConnected $totalTime $elapsed $mute
         fi
         local outputHead2=$(printf "${gray} 🔌 current time: $elapsed ")
         outputHead2+=$(printf "  ${gray}❌ last Disconnect time: $elapsedDisconnect ")
