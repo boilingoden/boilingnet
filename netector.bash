@@ -286,8 +286,8 @@ function toMiliSec() {
 }
 
 function setTitleConnected() {
-    printf '\e]2;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"
-    printf '\e]30;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"
+    printf '\e]2;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"      # Terminal
+    printf '\e]30;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"     # Konsole
 }
 
 function setTitleDisconnected() {
