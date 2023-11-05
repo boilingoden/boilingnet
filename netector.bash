@@ -7,6 +7,7 @@
 
 domain='gmail.com'
 url='https://gmail.com/generate_204'
+arguments='-s'
 
 red="\033[0;31m"
 redb="\033[0;91m"
@@ -57,16 +58,21 @@ function usage()
 function checkArguments() {
     while [[ $1 != "" ]]; do
         case $1 in
-            -d | --domain )     shift
+            -d | --domain )         shift
                         domain=$1
                                     ;;
-            -u | --url )     shift
+            -u | --url )            shift
                         url=$1
                                     ;;
-            -h | --help )         usage
+            -a | --argument )       shift
+                        arguments=$@
+                        echo $@
+                        return
+                                    ;;
+            -h | --help )           usage
                                     exit
                                     ;;
-            * )                   usage
+            * )                     usage
                                     exit 1
         esac
         echo $1;
@@ -271,7 +277,7 @@ function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
     local userAgent="user-agent: curl/7.88.1 "
     userAgent+="(compatible; ConnectivityCheckBot/0.1; https://soon.example.com/bot/)"
-    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$url"
+    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$url" "$arguments"
 }
 
 function toMiliSec() {
@@ -394,6 +400,7 @@ function netector() {
                 chartValue=-1
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
+                resultdig=-1
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
             [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
@@ -413,6 +420,7 @@ function netector() {
                 chartValue=-1
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
+                resultdig=-1
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
 
             fi
@@ -450,7 +458,7 @@ function netector() {
         local elapsed=$(date -ud @${SECONDS} +"%H:%M:%S")
         local elapsedDisconnect=$(date -ud @${lastDisconnectTime} +"%H:%M:%S")
         local elapsedConnect=$(date -ud @${lastConnectTime} +"%H:%M:%S")
-        if [[ $dis = true ]]; then
+        if [[ $exitCode -gt 0 ]]; then
             setTitleDisconnected $elapsed $mute
         else
             outputHead1+=$(printf "${txtColor} 🔄 Total time: $totalTime ms ")
