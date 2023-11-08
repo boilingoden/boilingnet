@@ -15,7 +15,7 @@ bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.
 ![boiling net demo](https://raw.githubusercontent.com/boilingoden/boilingnet/main/demo.png)
 
 #### charts bars: Total time* , DNS query time , TCP Handshake time , TLS handshake time
-[*] Total time = (`curl` - curl's `dns_lookup` time) + `dig` query time 
+[*] Total time = (`curl`'s `time_total` - `curl`'s `time_namelookup`) + `dig`'s `Query time` 
 
 #### in the chart above:
 - first bar = `-1` :  DNS is working - TCP handshake is working very fast (because we have TLS handshake) - TLS handshake is working - but after that, there is timeout
