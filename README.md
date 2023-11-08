@@ -21,3 +21,4 @@ bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.
 - first bar = `-1` :  DNS is working - TCP handshake is working very fast (because we have TLS handshake) - TLS handshake is working - but after that, there is timeout
 - second bar = `-2` : DNS is not working - TCP handshake is working very late - TLS handshake is working very late - there is timeout after that. (HTTP exchange)
 - third bar = `-1` : We now have the Total time's bar - DNS is not working - TCP handshake is working - TLS handshake is working - there is no timeout after that, because we have the Total time's bar
+- forth bar = `1046` : which means we had successful connection in both `dig` and `curl`. the +0 values like `1046` means Total time
