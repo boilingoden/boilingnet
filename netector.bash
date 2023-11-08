@@ -2,8 +2,12 @@
 
 # netector
 # usage:
-#       bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check]
-#       bash -d netector.bash gmail.com -u https://gmail.com/generate_204
+#       bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]
+#       bash -d netector.bash -d gmail.com -u https://gmail.com/generate_204
+
+#       bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k
+#
+#       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
 domain='gmail.com'
 url='https://gmail.com/generate_204'
@@ -51,8 +55,13 @@ tlsgreenmsec=200
 function usage()
 {
     echo "usage:"
-    echo "bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check]"
+    echo "bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]"
+    echo ""
     echo "bash -d netector.bash gmail.com -u https://gmail.com/generate_204"
+    echo ""
+    echo "bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k "
+    echo ""
+    echo "NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end"
 }
 
 function checkArguments() {
