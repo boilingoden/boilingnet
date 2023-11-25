@@ -1,7 +1,7 @@
-# boilingnet
+# BoilingNet
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
-## usage:
+## Usage:
 `bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]`
 ```sh
 bash -d netector.bash -d gmail.com -u https://gmail.com/generate_204
@@ -9,6 +9,19 @@ bash -d netector.bash -d gmail.com -u https://gmail.com/generate_204
 ```sh
 bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k
 ```
+
+## Requirements
+
+Debian base:
+```sh
+sudo apt install dnsutils curl jq -y
+```
+
+Redhat base:
+```sh
+sudo dnf install dnsutils curl jq -y
+```
+
 
 #### NOTE: all arguments after `-a` will be considered for `curl` command. therefore you **MUST** use it at the _end_
 
