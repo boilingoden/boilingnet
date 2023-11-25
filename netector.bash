@@ -136,6 +136,29 @@ function startNote() {
     sleep 3
 }
 
+
+function log() {
+  echo "$@" 1>&2
+}
+
+function checking() {
+  log -n "checking $@... "
+}
+
+function fatal() {
+  log "$@"
+  exit 1
+}
+
+function require() {
+  checking "for $1"
+  if ! [ -x "$(command -v $1)" ]; then
+    fatal "not found; please run: $2"
+  fi
+  log "ok"
+}
+
+
 # function floatToDigit() (printf '%.0f' $1)
 function floatToDigit() (echo ${1%\.*})
 
@@ -400,16 +423,18 @@ function netector() {
             [[ $mute -eq 0 ]] && alert
             SECONDS=$(($SECONDS - $secondsTemp))
             outputHead1=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
-            outputHead1+=$(printf "${red} ⚠️ $exitCode: $errorMsg ${clear}\n")
             if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
                 tailValue=-2
                 chartValue=-1
+                outputHead1+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $exitCode -gt 0 ]]; then
                 tailValue=-1
                 chartValue=-1
+                outputHead1+=$(printf "${red} ⚠️ (curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
                 resultdig=-1
+                outputHead1+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
             [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
@@ -420,18 +445,19 @@ function netector() {
             [[ $mute -eq 0 ]] && printf "\7"
             dis=true
             outputHead1=$(printf "${yellow} ❌ still disconnected!!! :(( ${clear}")
-            outputHead1+=$(printf "${red} ⚠️ $exitCode: $errorMsg ${clear}\n")
             if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
                 tailValue=-2
                 chartValue=-1
+                outputHead1+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $exitCode -gt 0 ]]; then
                 tailValue=-1
                 chartValue=-1
+                outputHead1+=$(printf "${red} ⚠️ (curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
                 resultdig=-1
+                outputHead1+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
-
             fi
             [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
@@ -535,6 +561,9 @@ function netector() {
     exit
 }
 
+require curl "sudo apt install curl (or sudo apk add curl)"
+require dig "sudo apt install dnsutils (or sudo apk add dnsutils)"
+require jq "sudo apt install jq (or sudo apk add jq)"
 
 checkArguments $@
 freedomIsFreedomToSay
