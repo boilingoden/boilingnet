@@ -51,6 +51,7 @@ tlsmaxmsec=300
 tlsyellowmsec=250
 tlsgreenmsec=200
 
+curlMinVersion='7.70.0'
 
 function usage()
 {
@@ -138,24 +139,35 @@ function startNote() {
 
 
 function log() {
-  echo "$@" 1>&2
+    echo "$@" 1>&2
 }
 
 function checking() {
-  log -n "checking $@... "
+    log -n "checking $@... "
 }
 
 function fatal() {
-  log "$@"
-  exit 1
+    log "$@"
+    exit 1
 }
 
 function require() {
-  checking "for $1"
-  if ! [ -x "$(command -v $1)" ]; then
-    fatal "not found; please run: $2"
-  fi
-  log "ok"
+    checking "for $1"
+    if ! [ -x "$(command -v $1)" ]; then
+        fatal "not found; please run: $2"
+    fi
+    log "ok"
+}
+
+function verlte() {
+    printf '%s\n' "$1" "$2" | sort -C -V
+}
+
+function cURLrequirment() {
+    checking "for curl compatibility"
+    local curlVersion=$(curl -V |awk 'NR==1{print $2}')
+    verlte "$curlVersion" "$curlMinVersion" && fatal "your cURL version is not compatible ( $curlVersion < $curlMinVersion), please update cURL or upgrade your OS"
+    log "ok"
 }
 
 
@@ -175,9 +187,9 @@ function convertToChartVlaue() {
         local totalTimePercentage=$(percent $1 $2) # value maxValue
         # to fit the chart with 33 character hight window
         totalTimePercentage=$(echo "$totalTimePercentage/3" | bc -s)
-        echo $totalTimePercentage
+        [[ $totalTimePercentage < 1 ]] && echo 1 || echo $totalTimePercentage
     else
-        echo $1
+        echo 1
     fi
 }
 
@@ -564,6 +576,8 @@ function netector() {
 require curl "sudo apt install curl (or sudo apk add curl)"
 require dig "sudo apt install dnsutils (or sudo apk add dnsutils)"
 require jq "sudo apt install jq (or sudo apk add jq)"
+
+cURLrequirment
 
 checkArguments $@
 freedomIsFreedomToSay
