@@ -405,7 +405,7 @@ function netector() {
         # local downloadSpeed=$(echo $resultjson | jq .speed_download)
         # local uploadSpeed=$(echo $resultjson | jq .speed_upload)
 
-        # local responseCode=$(echo $resultjson | jq .response_code)
+        local responseCode=$(echo $resultjson | jq .response_code)
         # local remoteIp=$(echo $resultjson | jq .remote_ip)
         # local certs=$(echo $resultjson | jq .certs)
         # printf "\n\n"
@@ -413,7 +413,7 @@ function netector() {
         local graphValue=0
         local txtColor=$gray
         local sleepValue=0
-        local outputHead1=''
+        local outputHead=''
         local outputChart=''
         local outputTail=''
         local chartValue=0
@@ -434,19 +434,19 @@ function netector() {
             dis=true
             [[ $mute -eq 0 ]] && alert
             SECONDS=$(($SECONDS - $secondsTemp))
-            outputHead1=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
+            outputHead=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
             if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
                 tailValue=-2
                 chartValue=-1
-                outputHead1+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
+                outputHead+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $exitCode -gt 0 ]]; then
                 tailValue=-1
                 chartValue=-1
-                outputHead1+=$(printf "${red} ⚠️ (curl) $exitCode: $errorMsg ${clear}\n")
+                outputHead+=$(printf "${red} ⚠️ (curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
                 resultdig=-1
-                outputHead1+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
+                outputHead+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
             [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
@@ -456,11 +456,11 @@ function netector() {
         elif [[ $exitCode -gt 0 ]] || [[ $resultdig -eq 0 ]]; then
             [[ $mute -eq 0 ]] && printf "\7"
             dis=true
-            outputHead1=$(printf "${yellow} ❌ still disconnected!!! :(( ${clear}")
+            outputHead=$(printf "${yellow} ❌ still disconnected!!! :(( ${clear}")
             if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
                 tailValue=-2
                 chartValue=-1
-                outputHead1+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
+                outputHead+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
             elif [[ $exitCode -gt 0 ]]; then
                 tailValue=-1
                 chartValue=-1
@@ -468,7 +468,7 @@ function netector() {
             elif [[ $resultdig -eq 0 ]]; then
                 tailValue=-1
                 resultdig=-1
-                outputHead1+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
+                outputHead+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
             [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
@@ -482,7 +482,7 @@ function netector() {
             disTemp=false
             SECONDS=$(($SECONDS - $secondsTemp))
             [[ $mute -eq 0 ]] && alert
-            outputHead1=$(printf "${greenbg} 📶 connected! :D ${clear}")
+            outputHead=$(printf "${greenbg} 📶 connected! :D ${clear}")
             txtColor=$cyanb
             tailValue=$totalTime
             chartValue=$(convertToChartVlaue $totalTime $maxmsec)
@@ -505,9 +505,11 @@ function netector() {
         local elapsed=$(date -ud @${SECONDS} +"%H:%M:%S")
         local elapsedDisconnect=$(date -ud @${lastDisconnectTime} +"%H:%M:%S")
         local elapsedConnect=$(date -ud @${lastConnectTime} +"%H:%M:%S")
+        local outputHead1=''
         if [[ $exitCode -gt 0 ]]; then
             setTitleDisconnected $elapsed $mute
         else
+            outputHead+=$(printf " 🔂 HTTP Code: $responseCode ")
             outputHead1+=$(printf "${txtColor} 🔄 Total time: $totalTime ms ")
             outputHead1+=$(printf "  🔄 DNS time: $resultdig ms ")
             outputHead1+=$(printf "  🔄 TCPH time: $tcpHandshakeTime ms ")
@@ -543,7 +545,7 @@ function netector() {
             clearInput
         elif [[ $input == "g" ]] || [[ $input == "G" ]]; then
             ((showGraph ^= 1))
-            chartValues=$((toChartValues ${tailValues[@]}))
+            # chartValues=$((toChartValues ${tailValues[@]})) # useless?
             # printf ' %-4s' "${chartValues[@]}"
             clearInput
             echo
