@@ -12,12 +12,12 @@ bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.
 
 ## Requirements
 
-Debian base:
+Debian-based distributions:
 ```sh
 sudo apt install dnsutils curl jq -y
 ```
 
-Redhat base:
+Red-Hat-based distributions:
 ```sh
 sudo dnf install dnsutils curl jq -y
 ```
