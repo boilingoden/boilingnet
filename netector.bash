@@ -9,8 +9,9 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
-domain='gmail.com'
 url='https://gmail.com/generate_204'
+domain='gmail.com'
+host_name=$domain
 arguments='-s'
 
 red="\033[0;31m"
@@ -52,6 +53,7 @@ tlsyellowmsec=250
 tlsgreenmsec=200
 
 curlMinVersion='7.70.0'
+curlVersion=''
 
 function usage()
 {
@@ -68,11 +70,10 @@ function usage()
 function checkArguments() {
     while [[ $1 != "" ]]; do
         case $1 in
-            -d | --domain )         shift
-                        domain=$1
-                                    ;;
             -u | --url )            shift
                         url=$1
+                        host_name=$(echo $url | awk -F[/:] '{print $4}')
+                        domain=$(echo $host_name | sed 's/.*\.\(.*\..*\)/\1/' )
                                     ;;
             -a | --argument )       shift
                         arguments=$@
@@ -165,7 +166,7 @@ function verlte() {
 
 function cURLrequirment() {
     checking "for curl compatibility"
-    local curlVersion=$(curl -V |awk 'NR==1{print $2}')
+    curlVersion=$(curl -V |awk 'NR==1{print $2}')
     verlte "$curlVersion" "$curlMinVersion" && fatal "your cURL version is not compatible ( $curlVersion < $curlMinVersion), please update cURL or upgrade your OS"
     log "ok"
 }
@@ -314,13 +315,18 @@ function chart() {
 # and in the default installation there is no way of using the external DoUDP servers:
 # https://everything.curl.dev/usingcurl/connections/name#name-resolve-tricks-with-c-ares
 function digcmd() {
-    dig +timeout=1 +retry=0 "$domain" @8.8.8.8 | grep "Query time"| awk '{print ($4+0)}'
+    local nsServer=$(dig "$domain" @8.8.8.8 ns +short |awk 'NR==1{print $1}')
+    if [[ $nsServer == '' ]]; then
+        echo '' #nothing
+    else
+        dig +timeout=1 +retry=0 "$host_name" "@$nsServer" | grep "Query time"| awk '{print ($4+0)}'
+    fi
 }
 
 function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
-    local userAgent="user-agent: curl/7.88.1 "
-    userAgent+="(compatible; ConnectivityCheckBot/0.1; https://soon.example.com/bot/)"
+    local userAgent="user-agent: curl/$curlVersion "
+    userAgent+="(compatible; ConnectivityCheckBot/0.1; https://github.com/boilingoden/boilingnet)"
     curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$url" "$arguments"
 }
 
