@@ -344,13 +344,13 @@ function toMiliSec() {
 }
 
 function setTitleConnected() {
-    printf '\e]2;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"      # Terminal
-    printf '\e]30;%s\a' "Netector | $domain | $1 ms -- uptime $2 | mute: $3"     # Konsole
+    printf '\e]2;%s\a' "Netector | $host_name | $1 ms -- uptime $2 | mute: $3"      # Terminal
+    printf '\e]30;%s\a' "Netector | $host_name | $1 ms -- uptime $2 | mute: $3"     # Konsole
 }
 
 function setTitleDisconnected() {
-    printf '\e]2;%s\a' "Netector | $domain | downtime $1 | mute: $2"
-    printf '\e]30;%s\a' "Netector | $domain | downtime $1 | mute: $2"
+    printf '\e]2;%s\a' "Netector | $host_name | downtime $1 | mute: $2"
+    printf '\e]30;%s\a' "Netector | $host_name | downtime $1 | mute: $2"
 }
 
 function clearInput() (while read -r -t 0; do read -r -t 3; done)
