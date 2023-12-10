@@ -2,12 +2,12 @@
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
 ## Usage:
-`bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]`
+`bash [bash file name]-u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]`
 ```sh
-bash -d netector.bash -d gmail.com -u https://gmail.com/generate_204
+bash netector.bash -u https://www.gmail.com/generate_204
 ```
 ```sh
-bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k
+bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 ```
 
 ## Requirements
@@ -28,7 +28,7 @@ sudo dnf install dnsutils curl jq -y
 ![boiling net demo](https://raw.githubusercontent.com/boilingoden/boilingnet/main/demo.png)
 
 #### charts bars: Total time* , DNS query time , TCP Handshake time , TLS handshake time
-[*] Total time = (`curl`'s `time_total` - `curl`'s `time_namelookup`) + `dig`'s `Query time` 
+[*] Total time = (`curl`'s `time_total` - `curl`'s `time_namelookup`) + `dig`'s `Query time` to domain's NS server
 
 #### in the chart above:
 - first bar = `-1` :  DNS is working - TCP handshake is working very fast (because we have TLS handshake) - TLS handshake is working - but after that, there is timeout
