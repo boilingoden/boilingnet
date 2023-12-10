@@ -9,6 +9,8 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
+version=0.1.3
+
 url='https://gmail.com/generate_204'
 domain='gmail.com'
 host_name=$domain
@@ -326,7 +328,7 @@ function digcmd() {
 function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
     local userAgent="user-agent: curl/$curlVersion "
-    userAgent+="(compatible; ConnectivityCheckBot/0.1; https://github.com/boilingoden/boilingnet)"
+    userAgent+="(compatible; ConnectivityCheckBot/$version; https://github.com/boilingoden/boilingnet)"
     curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$url" "$arguments"
 }
 
