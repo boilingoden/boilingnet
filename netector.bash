@@ -9,7 +9,7 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
-version=0.2.0
+version=0.2.1
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -318,7 +318,7 @@ function chart() {
 # https://everything.curl.dev/usingcurl/connections/name#name-resolve-tricks-with-c-ares
 # also, for a new apporach, we will dig to the domain's NS itself not the public resolver
 function digNScmd() {
-    dig +timeout=1 +retry=0 "$domain" @8.8.8.8 ns +short |awk 'NR==1{print $1}'
+    dig +timeout=1 +retry=0 "$domain" @8.8.8.8 ns +short |awk 'NR==1{print}'
 }
 function digcmd() {
     dig +timeout=1 +retry=0 "$host_name" "@$1"
@@ -381,7 +381,7 @@ function netector() {
         local resultdig=''
         local digStatus=''
         local digQueryTime=''
-        if [[ $resultdigNS != '' ]]; then
+        if [[ $resultdigNS != '' ]] || [[ $resultdigNS != ^";;"* ]]; then
             resultdig=$(digcmd $resultdigNS)
         fi
         if [[ $resultdig != '' ]]; then
