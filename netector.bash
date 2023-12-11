@@ -9,7 +9,7 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
-version=0.2.1
+version=0.2.2
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -381,13 +381,14 @@ function netector() {
         local resultdig=''
         local digStatus=''
         local digQueryTime=''
-        if [[ $resultdigNS != '' ]] || [[ $resultdigNS != ^";;"* ]]; then
+        if [[ "$resultdigNS" == '' ]] || [[ "$resultdigNS" == *';;'* ]]; then
+            resultdig=''
+        else
             resultdig=$(digcmd $resultdigNS)
         fi
         if [[ $resultdig != '' ]]; then
             digStatus=$(echo "$resultdig" | grep "HEADER"| awk '{print ($6)}')
             digQueryTime=$(echo "$resultdig" | grep "Query time"| awk '{print ($4+0)}')
-
         fi
         # echo $resultdigNS
         # echo $digStatus
@@ -413,10 +414,12 @@ function netector() {
         )
         [[ $tcpHandshakeTime -eq '' ]] && tcpHandshakeTime=0
         local sslHandshakeTime=$(
-            echo $resultjson | jq .time_appconnect | toMiliSec | awk -v ssltime="$tcpHandshakeTime" -v dnstime="$lookupTime"  '{print $1-ssltime-dnstime}'
+            echo $resultjson | jq .time_appconnect | toMiliSec | awk -v tcptime="$tcpHandshakeTime" -v dnstime="$lookupTime"  '{print $1-tcptime-dnstime}'
         )
         [[ $sslHandshakeTime -eq '' ]] && sslHandshakeTime=0
-        # local untilHttpStartTime=$(echo $resultjson | jq .time_starttransfer | toMiliSec)
+        local untilHttpStartTime=$(
+            echo $resultjson | jq .time_starttransfer | toMiliSec | awk -v tcptime="$tcpHandshakeTime" -v dnstime="$lookupTime" -v ssltime="$lookupTime"  '{print $1-ssltime-tcptime-dnstime}'
+        )
         local totalTime=$(
             echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$digQueryTime" '{print $1-lookupTime+dnstime}'
         )
@@ -530,12 +533,25 @@ function netector() {
         if [[ $exitCode -gt 0 ]]; then
             setTitleDisconnected $elapsed $mute
         else
-            outputHead+=$(printf " 🔂 DNS Status: $digStatus ")
-            outputHead+=$(printf "  🔂 HTTP Code: $responseCode ")
-            outputHead1+=$(printf "${txtColor} 🔄 Total time: $totalTime ms ")
-            outputHead1+=$(printf "  🔄 DNS time: $digQueryTime ms ")
-            outputHead1+=$(printf "  🔄 TCPH time: $tcpHandshakeTime ms ")
-            outputHead1+=$(printf "  🔄 TLSH time: $sslHandshakeTime ms ")
+            outputHead+=$(printf " 🔂 DNS Status: ")
+            outputHead+=$(printf '%-11s ' "$digStatus")
+            outputHead+=$(printf "  🔂 HTTP Code: ")
+            outputHead+=$(printf '%-3s ' "$responseCode")
+            outputHead1+=$(printf "${txtColor} 🔄 Total: ")
+            outputHead1+=$(printf '%-4s' "$totalTime")
+            outputHead1+="ms "
+            outputHead1+=$(printf "  🔄 DNS: ")
+            outputHead1+=$(printf '%-4s' "$digQueryTime")
+            outputHead1+="ms "
+            outputHead1+=$(printf "  🔄 TCPH: ")
+            outputHead1+=$(printf '%-4s' "$tcpHandshakeTime")
+            outputHead1+="ms "
+            outputHead1+=$(printf "  🔄 TLSH: ")
+            outputHead1+=$(printf '%-4s' "$sslHandshakeTime")
+            outputHead1+="ms "
+            outputHead1+=$(printf "  🔄 Start HTTP: ")
+            outputHead1+=$(printf '%-4s' "$untilHttpStartTime")
+            outputHead1+="ms "
             outputHead1+=$(printf "${clear}\n")
             setTitleConnected $totalTime $elapsed $mute
         fi
