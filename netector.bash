@@ -9,7 +9,7 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
-version=0.1.3
+version=0.2.0
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -316,13 +316,12 @@ function chart() {
 # https://stackoverflow.com/a/25681164
 # and in the default installation there is no way of using the external DoUDP servers:
 # https://everything.curl.dev/usingcurl/connections/name#name-resolve-tricks-with-c-ares
+# also, for a new apporach, we will dig to the domain's NS itself not the public resolver
+function digNScmd() {
+    dig +timeout=1 +retry=0 "$domain" @8.8.8.8 ns +short |awk 'NR==1{print $1}'
+}
 function digcmd() {
-    local nsServer=$(dig "$domain" @8.8.8.8 ns +short |awk 'NR==1{print $1}')
-    if [[ $nsServer == '' ]]; then
-        echo '' #nothing
-    else
-        dig +timeout=1 +retry=0 "$host_name" "@$nsServer" | grep "Query time"| awk '{print ($4+0)}'
-    fi
+    dig +timeout=1 +retry=0 "$host_name" "@$1"
 }
 
 function curlcmd() {
@@ -378,8 +377,22 @@ function netector() {
     while true; do
         # echo
         secondsTemp=$SECONDS
-        local resultdig=$(digcmd)
-        [[ $resultdig -eq '' ]] && resultdig=0
+        local resultdigNS=$(digNScmd)
+        local resultdig=''
+        local digStatus=''
+        local digQueryTime=''
+        if [[ $resultdigNS != '' ]]; then
+            resultdig=$(digcmd $resultdigNS)
+        fi
+        if [[ $resultdig != '' ]]; then
+            digStatus=$(echo "$resultdig" | grep "HEADER"| awk '{print ($6)}')
+            digQueryTime=$(echo "$resultdig" | grep "Query time"| awk '{print ($4+0)}')
+
+        fi
+        # echo $resultdigNS
+        # echo $digStatus
+        # echo $digQueryTime
+        [[ $digQueryTime -eq '' ]] && digQueryTime=0
         # local result=$(
         #     { stdout=$(curlcmd); returncode=$?; } 2>&1
         #     printf ". . . - - - . . .\n"
@@ -405,7 +418,7 @@ function netector() {
         [[ $sslHandshakeTime -eq '' ]] && sslHandshakeTime=0
         # local untilHttpStartTime=$(echo $resultjson | jq .time_starttransfer | toMiliSec)
         local totalTime=$(
-            echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$resultdig" '{print $1-lookupTime+dnstime}'
+            echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$digQueryTime" '{print $1-lookupTime+dnstime}'
         )
         [[ $totalTime -eq '' ]] && totalTime=0
         # local totalTime=$(echo $resultjson | jq .time_total | toMiliSec)
@@ -428,7 +441,7 @@ function netector() {
         local chartValuedns=0
         local chartValuetcp=0
         local chartValuessl=0
-        if { [ $exitCode -gt 0 ] || [ $resultdig -eq 0 ]; } && [[ $dis = false ]]; then
+        if { [ $exitCode -gt 0 ] || [ $digQueryTime -eq 0 ]; } && [[ $dis = false ]]; then
             lastConnectTime=$SECONDS
             # skip the first error (where there is a lot of noise)
             # if [[ $disTemp = false ]]; then
@@ -443,7 +456,7 @@ function netector() {
             [[ $mute -eq 0 ]] && alert
             SECONDS=$(($SECONDS - $secondsTemp))
             outputHead=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
-            if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
+            if [[ $exitCode -gt 0 ]] && [[ $digQueryTime -eq 0 ]]; then
                 tailValue=-2
                 chartValue=-1
                 outputHead+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
@@ -451,21 +464,21 @@ function netector() {
                 tailValue=-1
                 chartValue=-1
                 outputHead+=$(printf "${red} ⚠️ (curl) $exitCode: $errorMsg ${clear}\n")
-            elif [[ $resultdig -eq 0 ]]; then
+            elif [[ $digQueryTime -eq 0 ]]; then
                 tailValue=-1
-                resultdig=-1
-                outputHead+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
+                digQueryTime=-1
+                outputHead+=$(printf "${red} ⚠️ (dig) timed out - NS = $resultdigNS ${clear}\n")
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
-            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            [[ $digQueryTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $digQueryTime $maxmsec)
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-        elif [[ $exitCode -gt 0 ]] || [[ $resultdig -eq 0 ]]; then
+        elif [[ $exitCode -gt 0 ]] || [[ $digQueryTime -eq 0 ]]; then
             [[ $mute -eq 0 ]] && printf "\7"
             dis=true
             outputHead=$(printf "${yellow} ❌ still disconnected!!! :(( ${clear}")
-            if [[ $exitCode -gt 0 ]] && [[ $resultdig -eq 0 ]]; then
+            if [[ $exitCode -gt 0 ]] && [[ $digQueryTime -eq 0 ]]; then
                 tailValue=-2
                 chartValue=-1
                 outputHead+=$(printf "${red} ⚠️ (dig&curl) $exitCode: $errorMsg ${clear}\n")
@@ -473,13 +486,13 @@ function netector() {
                 tailValue=-1
                 chartValue=-1
                 outputHead1+=$(printf "${red} ⚠️ (curl) $exitCode: $errorMsg ${clear}\n")
-            elif [[ $resultdig -eq 0 ]]; then
+            elif [[ $digQueryTime -eq 0 ]]; then
                 tailValue=-1
-                resultdig=-1
-                outputHead+=$(printf "${red} ⚠️ (dig) timed out ${clear}\n")
+                digQueryTime=-1
+                outputHead+=$(printf "${red} ⚠️ (dig) timed out - NS = $resultdigNS ${clear}\n")
                 [[ $totalTime -gt 0 ]] && chartValue=$(convertToChartVlaue $totalTime $maxmsec)
             fi
-            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            [[ $digQueryTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $digQueryTime $maxmsec)
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
@@ -494,7 +507,7 @@ function netector() {
             txtColor=$cyanb
             tailValue=$totalTime
             chartValue=$(convertToChartVlaue $totalTime $maxmsec)
-            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            [[ $digQueryTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $digQueryTime $maxmsec)
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
@@ -503,7 +516,7 @@ function netector() {
             disTemp=false
             tailValue=$totalTime
             chartValue=$(convertToChartVlaue $totalTime $maxmsec)
-            [[ $resultdig -gt 0 ]] && chartValuedns=$(convertToChartVlaue $resultdig $maxmsec)
+            [[ $digQueryTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $digQueryTime $maxmsec)
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
@@ -517,9 +530,10 @@ function netector() {
         if [[ $exitCode -gt 0 ]]; then
             setTitleDisconnected $elapsed $mute
         else
-            outputHead+=$(printf " 🔂 HTTP Code: $responseCode ")
+            outputHead+=$(printf " 🔂 DNS Status: $digStatus ")
+            outputHead+=$(printf "  🔂 HTTP Code: $responseCode ")
             outputHead1+=$(printf "${txtColor} 🔄 Total time: $totalTime ms ")
-            outputHead1+=$(printf "  🔄 DNS time: $resultdig ms ")
+            outputHead1+=$(printf "  🔄 DNS time: $digQueryTime ms ")
             outputHead1+=$(printf "  🔄 TCPH time: $tcpHandshakeTime ms ")
             outputHead1+=$(printf "  🔄 TLSH time: $sslHandshakeTime ms ")
             outputHead1+=$(printf "${clear}\n")
