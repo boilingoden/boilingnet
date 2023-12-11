@@ -2,7 +2,7 @@
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
 ## Usage:
-`bash [bash file name]-u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]`
+`bash [bash file name] -u [URI of the target] [optional -a at the end for any cURL arguments]`
 ```sh
 bash netector.bash -u https://www.gmail.com/generate_204
 ```
