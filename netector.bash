@@ -9,7 +9,7 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
-version=0.2.2
+version=0.2.3
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -409,19 +409,22 @@ function netector() {
 
         local lookupTime=$(echo $resultjson | jq .time_namelookup | toMiliSec)
         [[ $lookupTime -eq '' ]] && lookupTime=0
+        local tcpHandshakeTime_raw=$(echo $resultjson | jq .time_connect | toMiliSec)
         local tcpHandshakeTime=$(
-            echo $resultjson | jq .time_connect | toMiliSec | awk -v dnstime="$lookupTime" '{print $1-dnstime}'
+            echo $tcpHandshakeTime_raw | awk -v elapsedtime="$lookupTime" '{print $1-elapsedtime}'
         )
         [[ $tcpHandshakeTime -eq '' ]] && tcpHandshakeTime=0
+        local sslHandshakeTime_raw=$(echo $resultjson | jq .time_appconnect | toMiliSec)
         local sslHandshakeTime=$(
-            echo $resultjson | jq .time_appconnect | toMiliSec | awk -v tcptime="$tcpHandshakeTime" -v dnstime="$lookupTime"  '{print $1-tcptime-dnstime}'
+            echo $sslHandshakeTime_raw | awk -v elapsedtime="$tcpHandshakeTime_raw" '{print $1-elapsedtime}'
         )
         [[ $sslHandshakeTime -eq '' ]] && sslHandshakeTime=0
+        local untilHttpStartTime_raw=$(echo $resultjson | jq .time_starttransfer | toMiliSec)
         local untilHttpStartTime=$(
-            echo $resultjson | jq .time_starttransfer | toMiliSec | awk -v tcptime="$tcpHandshakeTime" -v dnstime="$lookupTime" -v ssltime="$lookupTime"  '{print $1-ssltime-tcptime-dnstime}'
+            echo $untilHttpStartTime_raw | awk -v elapsedtime="$sslHandshakeTime_raw" -v dnstime="$lookupTime" -v ssltime="$lookupTime"  '{print $1-elapsedtime}'
         )
         local totalTime=$(
-            echo $resultjson | jq .time_total | toMiliSec | awk -v dnstime="$digQueryTime" '{print $1-lookupTime+dnstime}'
+            echo $resultjson | jq .time_total | toMiliSec | awk -v curldnstime="$lookupTime" -v digdnstime="$digQueryTime" '{print $1-curldnstime+digdnstime}'
         )
         [[ $totalTime -eq '' ]] && totalTime=0
         # local totalTime=$(echo $resultjson | jq .time_total | toMiliSec)
