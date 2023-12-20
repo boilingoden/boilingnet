@@ -21,16 +21,24 @@ bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 
 ## Requirements
 
-Debian-based distributions:
+### Debian-based distributions:
 ```sh
 sudo apt install dnsutils curl jq -y
 ```
 
-Red-Hat-based distributions:
+### Red-Hat-based distributions:
 ```sh
 sudo dnf install dnsutils curl jq -y
 ```
 
+### macOS:
+```sh
+brew install jq
+```
+Note: usually macOS has the latest version of cURL and `dig`. if not, try:
+```sh
+brew install bind curl jq
+```
 
 ![boiling net demo](https://raw.githubusercontent.com/boilingoden/boilingnet/main/demo.png)
 
