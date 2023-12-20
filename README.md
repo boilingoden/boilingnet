@@ -10,6 +10,15 @@ bash netector.bash -u https://www.gmail.com/generate_204
 bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 ```
 
+* `-u` or `--url` to set a new URI instead of default one (https://gmail.com/generate_204)
+* `-a` or `--argument` to set arguments for CURL commands. (e.g. `-I`) **NOTE**: this command must be used at the end.
+* `-m` or `--mute` to mute the alarms from the start. (you can unmute it anytime in run time by pressing `m` key)
+* `-g` or `--no-graph` to start with no graph. (you can see the graph anytime by pressing the `g` key at run time.
+* `-h` or `--help` to see the usage.
+
+
+#### NOTE: all arguments after `-a` will be considered for `curl` command. therefore you **MUST** use it at the _end_
+
 ## Requirements
 
 Debian-based distributions:
@@ -22,8 +31,6 @@ Red-Hat-based distributions:
 sudo dnf install dnsutils curl jq -y
 ```
 
-
-#### NOTE: all arguments after `-a` will be considered for `curl` command. therefore you **MUST** use it at the _end_
 
 ![boiling net demo](https://raw.githubusercontent.com/boilingoden/boilingnet/main/demo.png)
 
