@@ -13,7 +13,7 @@
 #       you can also use 'm' or 'g' anytime in run time
 
 
-version=0.2.4
+version=0.3.0
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -63,6 +63,8 @@ curlVersion=''
 
 mute=0
 showGraph=1
+
+osname=$(uname -s)
 
 function usage()
 {
@@ -380,6 +382,16 @@ function toChartValues() {
     echo ${CHARTVALUES[@]}
 }
 
+function dateToString() {
+    if [[ "$osname" == "Linux" ]]; then
+        date -ud @${1} +"%H:%M:%S"
+    elif [[ "$osname" == "Darwin" ]]; then
+        date -jRud @${1} +"%H:%M:%S"
+    else
+        echo "date command is not supported. book an issue"
+    fi
+}
+
 function netector() {
     # tput smcup
     SECONDS=1
@@ -544,9 +556,9 @@ function netector() {
             txtColor=$(getColor $totalTime)
             sleepValue=1
         fi
-        local elapsed=$(date -ud @${SECONDS} +"%H:%M:%S")
-        local elapsedDisconnect=$(date -ud @${lastDisconnectTime} +"%H:%M:%S")
-        local elapsedConnect=$(date -ud @${lastConnectTime} +"%H:%M:%S")
+        local elapsed=$(dateToString $SECONDS)
+        local elapsedDisconnect=$(dateToString $lastDisconnectTime)
+        local elapsedConnect=$(dateToString $lastConnectTime)
         local outputHead1=''
         if [[ $exitCode -gt 0 ]]; then
             setTitleDisconnected $elapsed $mute
@@ -595,7 +607,7 @@ function netector() {
             outputChart=$(chart ${chartValues[@]})
             outputTail=$(printf '  %-4s' "${tailValues[@]}")
         fi
-        read -r -t .1 -sn 1 input
+        read -r -t 0.1 -sn 1 input
         if [[ $input == "m" ]] || [[ $input == "M" ]]; then
             ((mute ^= 1))
             clearInput
