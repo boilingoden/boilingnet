@@ -9,7 +9,7 @@
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
 
-version=0.2.3
+version=0.2.4
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -57,6 +57,9 @@ tlsgreenmsec=200
 curlMinVersion='7.70.0'
 curlVersion=''
 
+mute=0
+showGraph=1
+
 function usage()
 {
     echo "usage:"
@@ -67,6 +70,10 @@ function usage()
     echo "bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k "
     echo ""
     echo "NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end"
+    echo ""
+    echo "use -m or --mute to mute alarms and -g or --no-graph to start without graph"
+    echo "you can also use 'm' or 'g' anytime in run time"
+
 }
 
 function checkArguments() {
@@ -76,6 +83,12 @@ function checkArguments() {
                         url=$1
                         host_name=$(echo $url | awk -F[/:] '{print $4}')
                         domain=$(echo $host_name | sed 's/.*\.\(.*\..*\)/\1/' )
+                                    ;;
+            -m | --mute )           shift
+                        mute=1
+                                    ;;
+            -g | --no-graph )       shift
+                        showGraph=0
                                     ;;
             -a | --argument )       shift
                         arguments=$@
@@ -371,8 +384,6 @@ function netector() {
     local tailValues=()
     local chartValues=()
     local maxarray=16
-    local mute=0
-    local showGraph=1
     local secondsTemp
     while true; do
         # echo
