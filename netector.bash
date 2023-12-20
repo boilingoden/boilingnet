@@ -4,10 +4,14 @@
 # usage:
 #       bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]
 #       bash -d netector.bash -d gmail.com -u https://gmail.com/generate_204
-
+#
 #       bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k
 #
 #       NOTE: all arguments after -a will be considered for curl. so you MUST use it at the end
+#
+#       use -m or --mute to mute alarms and -g or --no-graph to start without graph
+#       you can also use 'm' or 'g' anytime in run time
+
 
 version=0.2.4
 
