@@ -13,7 +13,7 @@
 #       you can also use 'm' or 'g' anytime in run time
 
 
-version=0.3.0
+version=0.3.1
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -63,6 +63,7 @@ curlVersion=''
 
 mute=0
 showGraph=1
+sleepValue=1
 
 osname=$(uname -s)
 
@@ -466,7 +467,6 @@ function netector() {
         # clear
         local graphValue=0
         local txtColor=$gray
-        local sleepValue=0
         local outputHead=''
         local outputChart=''
         local outputTail=''
@@ -607,7 +607,7 @@ function netector() {
             outputChart=$(chart ${chartValues[@]})
             outputTail=$(printf '  %-4s' "${tailValues[@]}")
         fi
-        read -r -t 0.1 -sn 1 input
+        read -r -t $sleepValue -sn 1 input
         if [[ $input == "m" ]] || [[ $input == "M" ]]; then
             ((mute ^= 1))
             clearInput
@@ -637,7 +637,7 @@ function netector() {
             echo
             echo -n "$outputTail"
         fi
-        sleep $sleepValue
+        # sleep $sleepValue
     done
     # tput rmcup
     exit
