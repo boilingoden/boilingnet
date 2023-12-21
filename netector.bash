@@ -14,9 +14,10 @@
 #
 #       use -r or --resolver to change the default public resolver (i.e. 8.8.8.8)
 #       use -t or --timeout to change the default timeout in dig and curl commands (i.e. 2 seconds)
+#       use -s or --sleep to wait more between each requests to avoid being rate limited
 #
 
-version=0.5.0
+version=0.6.1
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -66,7 +67,7 @@ curlVersion=''
 
 mute=0
 showGraph=1
-sleepValue=1
+sleepTime=0
 timeout=2
 
 osname=$(uname -s)
@@ -88,6 +89,8 @@ function usage()
     echo ""
     echo "use -r or --resolver to change the default public resolver (i.e 8.8.8.8)"
     echo "use -t or --timeout to change the default timeout in dig and curl commands (i.e. 2 seconds)"
+    echo "use -s or --sleep to wait more between each requests to avoid being rate limited"
+    echo ""
 
 }
 
@@ -107,6 +110,9 @@ function checkArguments() {
                                     ;;
             -r | --resolver )       shift
                         publicResolver=$1
+                                    ;;
+            -s | --sleep )       shift
+                        sleepTime=$1
                                     ;;
             -t | --timeout )       shift
                         timeout=$1
@@ -416,6 +422,7 @@ function netector() {
     local chartValues=()
     local maxarray=16
     local secondsTemp
+    local sleepValue=$sleepTime
     while true; do
         # echo
         secondsTemp=$SECONDS
@@ -488,8 +495,9 @@ function netector() {
         local chartValuedns=0
         local chartValuetcp=0
         local chartValuessl=0
+        local elapsedTemp=$(($SECONDS - $secondsTemp))
         if { [ $exitCode -gt 0 ] || [ $digQueryTime -eq 0 ]; } && [[ $dis = false ]]; then
-            lastConnectTime=$SECONDS
+            lastConnectTime=$(($SECONDS - $elapsedTemp))
             # skip the first error (where there is a lot of noise)
             # if [[ $disTemp = false ]]; then
             #     disTemp=true
@@ -501,7 +509,7 @@ function netector() {
             # fi
             dis=true
             [[ $mute -eq 0 ]] && alert
-            SECONDS=$(($SECONDS - $secondsTemp))
+            SECONDS=$elapsedTemp
             outputHead=$(printf "${redbg} ❌ disconnected!!! :(( ${clear}")
             if [[ $exitCode -gt 0 ]] && [[ $digQueryTime -eq 0 ]]; then
                 tailValue=-2
@@ -521,6 +529,8 @@ function netector() {
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
+            sleepValue=$(($sleepTime+0))
+            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
         elif [[ $exitCode -gt 0 ]] || [[ $digQueryTime -eq 0 ]]; then
             [[ $mute -eq 0 ]] && printf "\7"
             dis=true
@@ -543,12 +553,13 @@ function netector() {
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-            sleepValue=8
+            sleepValue=$(($sleepTime+3))
+            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
         elif [[ $dis = true ]]; then
-            lastDisconnectTime=$SECONDS
+            lastDisconnectTime=$(($SECONDS - $elapsedTemp))
             dis=false
             disTemp=false
-            SECONDS=$(($SECONDS - $secondsTemp))
+            SECONDS=$elapsedTemp
             [[ $mute -eq 0 ]] && alert
             outputHead=$(printf "${greenbg} 📶 connected! :D ${clear}")
             txtColor=$cyanb
@@ -558,7 +569,8 @@ function netector() {
             #[[ $lookupTime -gt 0 ]] && chartValuedns=$(convertToChartVlaue $lookupTime $maxmsec)
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
-            sleepValue=1
+            sleepValue=$(($sleepTime+1))
+            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
         else
             disTemp=false
             tailValue=$totalTime
@@ -568,7 +580,8 @@ function netector() {
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             txtColor=$(getColor $totalTime)
-            sleepValue=1
+            sleepValue=$(($sleepTime+1))
+            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
         fi
         local elapsed=$(dateToString $SECONDS)
         local elapsedDisconnect=$(dateToString $lastDisconnectTime)
@@ -650,6 +663,32 @@ function netector() {
             echo "$outputChart"
             echo
             echo -n "$outputTail"
+        fi
+
+        if [[ $responseCode -eq 420 ]] || [[ $responseCode -eq 429 ]]; then
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
+            echo -e "${redbg}   You received a HTTP code $responseCode ${clear}"
+            echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
+            echo "   You have to set a new sleep time with -s or --sleep argument"
+            echo "   more than the current value (i.e. $sleepTime)"
+            echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
+            echo "   Exiting... to end the unwelcome requests... "
+            echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            echo ""
+            exit
         fi
         # sleep $sleepValue
     done
