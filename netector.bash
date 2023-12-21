@@ -11,9 +11,11 @@
 #
 #       use -m or --mute to mute alarms and -g or --no-graph to start without graph
 #       you can also use 'm' or 'g' anytime in run time
+#
+#       use -r or --resolver to change the default public resolver (i.e 8.8.8.8)
+#
 
-
-version=0.3.1
+version=0.4.0
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -66,6 +68,7 @@ showGraph=1
 sleepValue=1
 
 osname=$(uname -s)
+publicResolver="8.8.8.8"
 
 function usage()
 {
@@ -80,6 +83,8 @@ function usage()
     echo ""
     echo "use -m or --mute to mute alarms and -g or --no-graph to start without graph"
     echo "you can also use 'm' or 'g' anytime in run time"
+    echo ""
+    echo "use -r or --resolver to change the default public resolver (i.e 8.8.8.8)"
 
 }
 
@@ -96,6 +101,9 @@ function checkArguments() {
                                     ;;
             -g | --no-graph )       shift
                         showGraph=0
+                                    ;;
+            -r | --resolver )       shift
+                        publicResolver=$1
                                     ;;
             -a | --argument )       shift
                         arguments=$@
