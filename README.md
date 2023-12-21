@@ -1,6 +1,7 @@
 # BoilingNet
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
+see the [methodology](?#Methodology) section to see what we actually do.
 
 ## Usage:
 `bash [bash file name] -u [URI of the target] [optional -a at the end for any cURL arguments]`
@@ -11,10 +12,11 @@ bash netector.bash -u https://www.gmail.com/generate_204
 bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 ```
 
-* `-u` or `--url` to set a new URI instead of default one (https://gmail.com/generate_204)
+* `-u` or `--url` to set a new URI instead of default one (i.e. `https://gmail.com/generate_204`)
 * `-a` or `--argument` to set arguments for CURL commands. (e.g. `-I`) **NOTE**: this command must be used at the end.
 * `-m` or `--mute` to mute the alarms from the start. (you can unmute it anytime in run time by pressing `m` key)
 * `-g` or `--no-graph` to start with no graph. (you can see the graph anytime by pressing the `g` key at run time.
+* `-r` or `--resolver` to change the default public resolver (i.e. 8.8.8.8)
 * `-h` or `--help` to see the usage.
 
 
@@ -54,7 +56,7 @@ brew install bind curl jq
 
 ## Methodology
 
-using `dig` command 1) we will fetch the NS of the domain using our default public resolver (i.e 8.8.8.8) then 2) request the hostname directly to the NS server to check if the NS is working properly. finaly, using `curl` command, 3) we will request the URI. All as follows:
+using `dig` command 1) we will fetch the NS of the domain using our default public resolver (i.e. 8.8.8.8) then 2) request the hostname directly to the NS server to check if the NS is working properly. finaly, using `curl` command, 3) we will request the URI. All as follows:
 
 example URI: `https://cp.cloudflare.com/generate_204`
 
