@@ -1,6 +1,7 @@
 # BoilingNet
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
+
 ## Usage:
 `bash [bash file name] -u [URI of the target] [optional -a at the end for any cURL arguments]`
 ```sh
@@ -46,7 +47,36 @@ brew install bind curl jq
 [*] Total time = (`curl`'s `time_total` - `curl`'s `time_namelookup`) + `dig`'s `Query time` to domain's NS server
 
 #### in the chart above:
-- first bar = `-1` :  DNS is working - TCP handshake is working very fast (because we have TLS handshake) - TLS handshake is working - but after that, there is timeout
+- first bar = `-1` :  DNS is working - TCP handshake is working very fast (less to show in graph --> fixed now) - TLS handshake is working - but after that, there is timeout
 - second bar = `-2` : DNS is not working - TCP handshake is working very late - TLS handshake is working very late - there is timeout after that. (HTTP exchange)
 - third bar = `-1` : We now have the Total time's bar - DNS is not working - TCP handshake is working - TLS handshake is working - there is no timeout after that, because we have the Total time's bar
 - forth bar = `1046` : which means we had successful connection in both `dig` and `curl`. the +0 values like `1046` means Total time
+
+## Methodology
+
+using `dig` command 1) we will fetch the NS of the domain using our default public resolver (i.e 8.8.8.8) then 2) request the hostname directly to the NS server to check if the NS is working properly. finaly, using `curl` command, 3) we will request the URI. All as follows:
+
+example URI: `https://cp.cloudflare.com/generate_204`
+
+1.
+```sh
+$ dig +timeout=1 +retry=0 cloudflare.com @8.8.8.8 NS +short
+ns3.cloudflare.com.
+[SNIP]
+```
+
+2.
+```sh
+$ dig +timeout=1 +retry=0 cp.cloudflare.com @ns3.cloudflare.com.
+[SNIP]
+;; ->>HEADER<<- opcode: QUERY, status: NOERROR, id: 40853
+[SNIP]
+;; Query time: 308 msec
+[SNIP]
+```
+
+3.
+```sh
+$ curl -o /dev/null -4 -m2 -sw "%{json}\n" https://cp.cloudflare.com/generate_204
+{[SNIP],"http_code":204,[SNIP],"time_appconnect":0.560336,"time_connect":0.355649,"time_namelookup":0.163739,"time_pretransfer":0.560398,"time_redirect":0.000000,"time_starttransfer":0.966813,"time_total":0.966860,[SNIP]}
+```
