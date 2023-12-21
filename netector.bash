@@ -387,9 +387,9 @@ function dateToString() {
     if [[ "$osname" == "Linux" ]]; then
         date -ud @${1} +"%H:%M:%S"
     elif [[ "$osname" == "Darwin" ]]; then
-        date -jRud @${1} +"%H:%M:%S"
+        date -ur $1 +"%H:%M:%S"
     else
-        echo "date command is not supported. book an issue"
+        echo "'date' command is not supported. please file an issue"
     fi
 }
 
