@@ -11,9 +11,11 @@
 #
 #       use -m or --mute to mute alarms and -g or --no-graph to start without graph
 #       you can also use 'm' or 'g' anytime in run time
+#
+#       use -r or --resolver to change the default public resolver (i.e 8.8.8.8)
+#
 
-
-version=0.2.4
+version=0.4.0
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -63,6 +65,10 @@ curlVersion=''
 
 mute=0
 showGraph=1
+sleepValue=1
+
+osname=$(uname -s)
+publicResolver="8.8.8.8"
 
 function usage()
 {
@@ -77,6 +83,8 @@ function usage()
     echo ""
     echo "use -m or --mute to mute alarms and -g or --no-graph to start without graph"
     echo "you can also use 'm' or 'g' anytime in run time"
+    echo ""
+    echo "use -r or --resolver to change the default public resolver (i.e 8.8.8.8)"
 
 }
 
@@ -93,6 +101,9 @@ function checkArguments() {
                                     ;;
             -g | --no-graph )       shift
                         showGraph=0
+                                    ;;
+            -r | --resolver )       shift
+                        publicResolver=$1
                                     ;;
             -a | --argument )       shift
                         arguments=$@
@@ -380,6 +391,16 @@ function toChartValues() {
     echo ${CHARTVALUES[@]}
 }
 
+function dateToString() {
+    if [[ "$osname" == "Linux" ]]; then
+        date -ud @${1} +"%H:%M:%S"
+    elif [[ "$osname" == "Darwin" ]]; then
+        date -ur $1 +"%H:%M:%S"
+    else
+        echo "'date' command is not supported. please file an issue"
+    fi
+}
+
 function netector() {
     # tput smcup
     SECONDS=1
@@ -454,7 +475,6 @@ function netector() {
         # clear
         local graphValue=0
         local txtColor=$gray
-        local sleepValue=0
         local outputHead=''
         local outputChart=''
         local outputTail=''
@@ -544,9 +564,9 @@ function netector() {
             txtColor=$(getColor $totalTime)
             sleepValue=1
         fi
-        local elapsed=$(date -ud @${SECONDS} +"%H:%M:%S")
-        local elapsedDisconnect=$(date -ud @${lastDisconnectTime} +"%H:%M:%S")
-        local elapsedConnect=$(date -ud @${lastConnectTime} +"%H:%M:%S")
+        local elapsed=$(dateToString $SECONDS)
+        local elapsedDisconnect=$(dateToString $lastDisconnectTime)
+        local elapsedConnect=$(dateToString $lastConnectTime)
         local outputHead1=''
         if [[ $exitCode -gt 0 ]]; then
             setTitleDisconnected $elapsed $mute
@@ -595,7 +615,7 @@ function netector() {
             outputChart=$(chart ${chartValues[@]})
             outputTail=$(printf '  %-4s' "${tailValues[@]}")
         fi
-        read -r -t .1 -sn 1 input
+        read -r -t $sleepValue -sn 1 input
         if [[ $input == "m" ]] || [[ $input == "M" ]]; then
             ((mute ^= 1))
             clearInput
@@ -625,7 +645,7 @@ function netector() {
             echo
             echo -n "$outputTail"
         fi
-        sleep $sleepValue
+        # sleep $sleepValue
     done
     # tput rmcup
     exit
