@@ -17,6 +17,7 @@ bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 * `-m` or `--mute` to mute the alarms from the start. (you can unmute it anytime in run time by pressing `m` key)
 * `-g` or `--no-graph` to start with no graph. (you can see the graph anytime by pressing the `g` key at run time.
 * `-r` or `--resolver` to change the default public resolver (i.e. 8.8.8.8)
+* `-t` or `--timeout` to change the default timeout in dig and curl commands (i.e. 2 seconds)
 * `-h` or `--help` to see the usage.
 
 
