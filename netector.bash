@@ -17,7 +17,7 @@
 #       use -s or --sleep to wait more between each requests to avoid being rate limited
 #
 
-version=0.6.1
+version=0.6.2
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -67,7 +67,7 @@ curlVersion=''
 
 mute=0
 showGraph=1
-sleepTime=0
+sleepTime=1
 timeout=2
 
 osname=$(uname -s)
@@ -425,6 +425,7 @@ function netector() {
     local sleepValue=$sleepTime
     while true; do
         # echo
+        # echo $SECONDS
         secondsTemp=$SECONDS
         local resultdigNS=$(digNScmd)
         local resultdig=''
@@ -496,6 +497,8 @@ function netector() {
         local chartValuetcp=0
         local chartValuessl=0
         local elapsedTemp=$(($SECONDS - $secondsTemp))
+        # echo $elapsedTemp
+        # echo $SECONDS
         if { [ $exitCode -gt 0 ] || [ $digQueryTime -eq 0 ]; } && [[ $dis = false ]]; then
             lastConnectTime=$(($SECONDS - $elapsedTemp))
             # skip the first error (where there is a lot of noise)
@@ -530,7 +533,8 @@ function netector() {
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             sleepValue=$(($sleepTime+0))
-            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $elapsedTemp -gt $sleepValue ]] || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $sleepValue -eq 0 ]] && sleepValue=1
         elif [[ $exitCode -gt 0 ]] || [[ $digQueryTime -eq 0 ]]; then
             [[ $mute -eq 0 ]] && printf "\7"
             dis=true
@@ -554,7 +558,8 @@ function netector() {
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             sleepValue=$(($sleepTime+3))
-            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $elapsedTemp -gt $sleepValue ]] || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $sleepValue -eq 0 ]] && sleepValue=1
         elif [[ $dis = true ]]; then
             lastDisconnectTime=$(($SECONDS - $elapsedTemp))
             dis=false
@@ -570,7 +575,8 @@ function netector() {
             [[ $tcpHandshakeTime -gt 0 ]] && chartValuetcp=$(convertToChartVlaue $tcpHandshakeTime $maxmsec)
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             sleepValue=$(($sleepTime+1))
-            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $elapsedTemp -gt $sleepValue ]] || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $sleepValue -eq 0 ]] && sleepValue=1
         else
             disTemp=false
             tailValue=$totalTime
@@ -581,7 +587,8 @@ function netector() {
             [[ $sslHandshakeTime -gt 0 ]] && chartValuessl=$(convertToChartVlaue $sslHandshakeTime $maxmsec)
             txtColor=$(getColor $totalTime)
             sleepValue=$(($sleepTime+1))
-            [[ $elapsedTemp -gt $sleepValue ]] && sleepValue=1 || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $elapsedTemp -gt $sleepValue ]] || sleepValue=$(($sleepValue - $elapsedTemp))
+            [[ $sleepValue -eq 0 ]] && sleepValue=1
         fi
         local elapsed=$(dateToString $SECONDS)
         local elapsedDisconnect=$(dateToString $lastDisconnectTime)
@@ -634,6 +641,7 @@ function netector() {
             outputChart=$(chart ${chartValues[@]})
             outputTail=$(printf '  %-4s' "${tailValues[@]}")
         fi
+        # echo $sleepValue
         read -r -t $sleepValue -sn 1 input
         if [[ $input == "m" ]] || [[ $input == "M" ]]; then
             ((mute ^= 1))
