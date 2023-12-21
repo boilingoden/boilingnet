@@ -12,10 +12,11 @@
 #       use -m or --mute to mute alarms and -g or --no-graph to start without graph
 #       you can also use 'm' or 'g' anytime in run time
 #
-#       use -r or --resolver to change the default public resolver (i.e 8.8.8.8)
+#       use -r or --resolver to change the default public resolver (i.e. 8.8.8.8)
+#       use -t or --timeout to change the default timeout in dig and curl commands (i.e. 2 seconds)
 #
 
-version=0.4.0
+version=0.5.0
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -66,6 +67,7 @@ curlVersion=''
 mute=0
 showGraph=1
 sleepValue=1
+timeout=2
 
 osname=$(uname -s)
 publicResolver="8.8.8.8"
@@ -85,6 +87,7 @@ function usage()
     echo "you can also use 'm' or 'g' anytime in run time"
     echo ""
     echo "use -r or --resolver to change the default public resolver (i.e 8.8.8.8)"
+    echo "use -t or --timeout to change the default timeout in dig and curl commands (i.e. 2 seconds)"
 
 }
 
@@ -104,6 +107,9 @@ function checkArguments() {
                                     ;;
             -r | --resolver )       shift
                         publicResolver=$1
+                                    ;;
+            -t | --timeout )       shift
+                        timeout=$1
                                     ;;
             -a | --argument )       shift
                         arguments=$@
@@ -346,17 +352,17 @@ function chart() {
 # https://everything.curl.dev/usingcurl/connections/name#name-resolve-tricks-with-c-ares
 # also, for a new apporach, we will dig to the domain's NS itself not the public resolver
 function digNScmd() {
-    dig +timeout=1 +retry=0 "$domain" @8.8.8.8 ns +short |awk 'NR==1{print}'
+    dig +timeout="$timeout" +retry=0 "$domain" @8.8.8.8 ns +short |awk 'NR==1{print}'
 }
 function digcmd() {
-    dig +timeout=1 +retry=0 "$host_name" "@$1"
+    dig +timeout="$timeout" +retry=0 "$host_name" "@$1"
 }
 
 function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
     local userAgent="user-agent: curl/$curlVersion "
     userAgent+="(compatible; ConnectivityCheckBot/$version; https://github.com/boilingoden/boilingnet)"
-    curl -o /dev/null -4H "$userAgent" -m2 -sw "%{json}\n" "$url" "$arguments"
+    curl -o /dev/null -4H "$userAgent" -m "$timeout" -sw "%{json}\n" "$url" "$arguments"
 }
 
 function toMiliSec() {
