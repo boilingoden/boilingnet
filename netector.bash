@@ -2,7 +2,7 @@
 
 # netector
 # usage:
-#       bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]
+#       bash [bash file name] -d [hostname for DNS check] -u [URI for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]
 #       bash -d netector.bash -d gmail.com -u https://gmail.com/generate_204
 #
 #       bash -d netector.bash -d self-signed.example.com -u https://self-signed.example.com/robots.txt -a -k
@@ -19,7 +19,7 @@
 
 version=0.6.4
 
-url='https://gmail.com/generate_204'
+uri='https://gmail.com/generate_204'
 domain='gmail.com'
 host_name=$domain
 arguments='-s'
@@ -76,7 +76,7 @@ publicResolver="8.8.8.8"
 function usage()
 {
     echo "usage:"
-    echo "bash [bash file name] -d [hostname for DNS check] -u [URL for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]"
+    echo "bash [bash file name] -d [hostname for DNS check] -u [URI for TCP+TLS+etc check] [optional -a at the end for any cURL arguments]"
     echo ""
     echo "bash -d netector.bash gmail.com -u https://gmail.com/generate_204"
     echo ""
@@ -97,9 +97,9 @@ function usage()
 function checkArguments() {
     while [[ $1 != "" ]]; do
         case $1 in
-            -u | --url )            shift
-                        url=$1
-                        host_name=$(echo $url | awk -F[/:] '{print $4}')
+            -u | --uri )            shift
+                        uri=$1
+                        host_name=$(echo $uri | awk -F[/:] '{print $4}')
                         domain=$(echo $host_name | sed 's/.*\.\(.*\..*\)/\1/' )
                                     ;;
             -m | --mute )           shift
@@ -368,7 +368,7 @@ function curlcmd() {
     # user-agent: https://datatracker.ietf.org/doc/html/rfc9309#name-the-user-agent-line
     local userAgent="user-agent: curl/$curlVersion "
     userAgent+="(compatible; ConnectivityCheckBot/$version; https://github.com/boilingoden/boilingnet)"
-    curl -o /dev/null -4H "$userAgent" -m "$timeout" -sw "%{json}\n" "$url" "$arguments"
+    curl -o /dev/null -4H "$userAgent" -m "$timeout" -sw "%{json}\n" "$uri" "$arguments"
 }
 
 function toMiliSec() {
