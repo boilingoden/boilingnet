@@ -7,7 +7,8 @@ see the [methodology](#methodology) section to see what we actually do.
 
 ### Table of Content
 - [Usage](#usage)
-- [Hotkeys](#hotkeys)
+  - [Arguments](#arguments)
+  - [Hotkeys](#hotkeys)
 - [Requirements](#requirements)
   - [Debian-based distributions](#debian-based-distributions)
   - [Red-Hat-based distributions](#red-hat-based-distributions)
@@ -23,6 +24,7 @@ bash netector.bash -u https://www.gmail.com/generate_204
 ```sh
 bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 ```
+### Arguments
 
 * `-u` or `--url` to set a new URI instead of default one (i.e. `https://gmail.com/generate_204`)
 * `-a` or `--argument` to set arguments for CURL commands. (e.g. `-I`) **NOTE**: this command must be used at the end.
