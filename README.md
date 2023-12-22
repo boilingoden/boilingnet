@@ -26,7 +26,7 @@ bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 ```
 ### Arguments
 
-* `-u` or `--url` to set a new URI instead of default one (i.e. `https://gmail.com/generate_204`)
+* `-u` or `--uri` to set a new URI instead of default one (i.e. `https://gmail.com/generate_204`)
 * `-a` or `--argument` to set arguments for `curl` commands. (e.g. `-I`) **NOTE**: this command must be used at the end.
 * `-m` or `--mute` to mute the alarms from the start. (you can unmute it anytime in run time by pressing `m` key)
 * `-g` or `--no-graph` to start with no graph. (you can see the graph anytime by pressing the `g` key at run time.
