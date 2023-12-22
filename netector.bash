@@ -427,7 +427,7 @@ function checkInput() {
     elif [[ $input == "q" ]] || [[ $input == "Q" ]]; then
         echo
         freedomIsFreedomToSay
-        break
+        exit
     else
         clearInput
     fi
