@@ -17,7 +17,7 @@
 #       use -s or --sleep to wait more between each requests to avoid being rate limited
 #
 
-version=0.6.2
+version=0.6.4
 
 url='https://gmail.com/generate_204'
 domain='gmail.com'
