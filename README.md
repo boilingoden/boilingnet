@@ -3,6 +3,8 @@ check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
 see the [methodology](?#Methodology) section to see what we actually do.
 
+**Note**: we send requests with a [unique User-Agent](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L370), if our requests _are not_ welcomed, [tell the script to exit](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L436) using response with HTTP Code **420** or **429**.
+
 ## Usage:
 `bash [bash file name] -u [URI of the target] [optional -a at the end for any cURL arguments]`
 ```sh
@@ -23,6 +25,13 @@ bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 
 
 #### NOTE: all arguments after `-a` will be considered for `curl` command. therefore you **MUST** use it at the _end_
+
+### Hotkeys
+
+* press `m` or `M` to mute/unmute
+* press `g` or `G` to show the graph or disable it
+* press `q` or `Q` to exit
+
 
 ## Requirements
 
