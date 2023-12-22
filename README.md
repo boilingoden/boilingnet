@@ -1,7 +1,7 @@
 # BoilingNet
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
-see the [methodology](?#Methodology) section to see what we actually do.
+see the [methodology](https://github.com/boilingoden/boilingnet#methodology) section to see what we actually do.
 
 **Note**: we send requests with a [unique User-Agent](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L370), if our requests _are not_ welcomed, [tell the script to exit](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L436) using response with HTTP Code **420** or **429**.
 
