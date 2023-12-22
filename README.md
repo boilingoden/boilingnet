@@ -1,9 +1,19 @@
 # BoilingNet
 check disconnections and interrupts using `cURL` (>= 7.70.0) and `dig`
 
-see the [methodology](https://github.com/boilingoden/boilingnet#methodology) section to see what we actually do.
+see the [methodology](#methodology) section to see what we actually do.
 
-**Note**: we send requests with a [unique User-Agent](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L370), if our requests _are not_ welcomed, [tell the script to exit](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L436) using response with HTTP Code **420** or **429**.
+**Note**: we send requests with a [unique User-Agent](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L370), if the server doesn't welcome our requests ([indicated by HTTP Code **420** or **429**](https://github.com/boilingoden/boilingnet/blob/21a025446d425141734f361a4fefb1705779f4d2/netector.bash#L436)), the script will automatically exit.
+
+### Table of Content
+- [Usage](#usage)
+- [Hotkeys](#hotkeys)
+- [Requirements](#requirements)
+  - [Debian-based distributions](#debian-based-distributions)
+  - [Red-Hat-based distributions](#red-hat-based-distributions)
+  - [macOS](#macos)
+- [Demo](#demo)
+- [Methodology](#methodology)
 
 ## Usage:
 `bash [bash file name] -u [URI of the target] [optional -a at the end for any cURL arguments]`
@@ -29,7 +39,7 @@ bash netector.bash -u https://self-signed.example.com/robots.txt -a -k
 ### Hotkeys
 
 * press `m` or `M` to mute/unmute
-* press `g` or `G` to show the graph or disable it
+* press `g` or `G` to show or hide the graph
 * press `q` or `Q` to exit
 
 
@@ -53,8 +63,8 @@ Note: usually macOS has the latest version of cURL and `dig`. if not, try:
 ```sh
 brew install bind curl jq
 ```
-
-![boiling net demo](https://raw.githubusercontent.com/boilingoden/boilingnet/main/demo.png)
+## Demo
+![BoilingNet Demo](https://raw.githubusercontent.com/boilingoden/boilingnet/main/demo.png)
 
 #### charts bars: Total time* , DNS query time , TCP Handshake time , TLS handshake time
 [*] Total time = (`curl`'s `time_total` - `curl`'s `time_namelookup`) + `dig`'s `Query time` to domain's NS server
