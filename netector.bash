@@ -413,6 +413,54 @@ function dateToString() {
     fi
 }
 
+function checkInput() {
+    read -r -t $sleepValue -sn 1 input
+    if [[ $input == "m" ]] || [[ $input == "M" ]]; then
+        ((mute ^= 1))
+        clearInput
+    elif [[ $input == "g" ]] || [[ $input == "G" ]]; then
+        ((showGraph ^= 1))
+        # chartValues=$((toChartValues ${tailValues[@]})) # useless?
+        # printf ' %-4s' "${chartValues[@]}"
+        clearInput
+        echo
+    elif [[ $input == "q" ]] || [[ $input == "Q" ]]; then
+        echo
+        freedomIsFreedomToSay
+        break
+    else
+        clearInput
+    fi
+}
+
+function shouldWeCalmDown() {
+    if [[ $1 -eq 420 ]] || [[ $1 -eq 429 ]]; then
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
+        echo -e "${redbg}   You received a HTTP code $1 ${clear}"
+        echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
+        echo "   You have to set a new sleep time with -s or --sleep argument"
+        echo "   more than the current value (i.e. $sleepTime)"
+        echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
+        echo "   Exiting... to end the unwelcome requests... "
+        echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        echo ""
+        exit
+    fi
+}
+
 function netector() {
     # tput smcup
     SECONDS=1
@@ -642,23 +690,7 @@ function netector() {
             outputTail=$(printf '  %-4s' "${tailValues[@]}")
         fi
         # echo $sleepValue
-        read -r -t $sleepValue -sn 1 input
-        if [[ $input == "m" ]] || [[ $input == "M" ]]; then
-            ((mute ^= 1))
-            clearInput
-        elif [[ $input == "g" ]] || [[ $input == "G" ]]; then
-            ((showGraph ^= 1))
-            # chartValues=$((toChartValues ${tailValues[@]})) # useless?
-            # printf ' %-4s' "${chartValues[@]}"
-            clearInput
-            echo
-        elif [[ $input == "q" ]] || [[ $input == "Q" ]]; then
-            echo
-            freedomIsFreedomToSay
-            break
-        else
-            clearInput
-        fi
+        checkInput
         # read -d '' -t 0.6 -n 10000
         # sleep .4
         # tput clear
@@ -673,31 +705,7 @@ function netector() {
             echo -n "$outputTail"
         fi
 
-        if [[ $responseCode -eq 420 ]] || [[ $responseCode -eq 429 ]]; then
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
-            echo -e "${redbg}   You received a HTTP code $responseCode ${clear}"
-            echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
-            echo "   You have to set a new sleep time with -s or --sleep argument"
-            echo "   more than the current value (i.e. $sleepTime)"
-            echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
-            echo "   Exiting... to end the unwelcome requests... "
-            echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            echo ""
-            exit
-        fi
+        shouldWeCalmDown $responseCode
         # sleep $sleepValue
     done
     # tput rmcup
