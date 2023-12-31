@@ -17,7 +17,7 @@
 #       use -s or --sleep to wait more between each requests to avoid being rate limited
 #
 
-version=1.0.0
+version=1.0.2
 
 uri='https://gmail.com/generate_204'
 domain='gmail.com'
@@ -443,10 +443,11 @@ function shouldWeCalmDown() {
         echo ""
         echo ""
         echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
-        echo -e "${redbg}   You received a HTTP code $1 ${clear}"
+        echo -e "   ${redbg}You received a HTTP code $1 ${clear}"
+        echo -e "   ${yellowb}for URI: $uri ${clear}"
         echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
         echo "   You have to set a new sleep time with -s or --sleep argument"
-        echo "   more than the current value (i.e. $sleepTime)"
+        echo "   more than the current value (i.e. > $sleepTime)"
         echo -e " ${yellowb}⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛ ⛚ ⛛${clear}"
         echo "   Exiting... to end the unwelcome requests... "
         echo " ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️ ⚠️"
